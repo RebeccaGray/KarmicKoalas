@@ -5,18 +5,20 @@ const express = require('express')
 //const http = require('http')
 //const server = require('http').Server(app);
 const PORT = process.env.PORT || 3001;
-app.use(express.static('../'));
+//app.use(express.static('../'));
 const socketIO = require('socket.io');
 //var api = require("./api");
 var rooms = {}  //a place to store groups {socketId:roomId,socketId:roomId,...}
 
 const server = express()
- .listen(port, ()=>
-  console.log('server listening on ${ PORT } ')
+ .use((req, res) => res.sendFile(TEST) )
+ .listen(PORT, ()=>
+  console.log('server listening on ${ PORT }')
+ 
   );
 
 // use socket.io
-cosnt io = socketIO(server);
+const io = socketIO(server);
 
 
 //turn off debug
@@ -53,4 +55,4 @@ io.sockets.on('connection', (socket)=>{
 setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
 
 
-module.exports = app;
+//module.exports = app;
