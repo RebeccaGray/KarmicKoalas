@@ -1,22 +1,22 @@
-//var express = require('express');
+var express = require('express');
 var nodemailer = require('nodemailer');
 
-var app = express();
+var api = express();
 
 
-app.post('/signup', function(req, res){
-
-});
-
-app.post('/login', function(req, res){
+api.post('/signup', function(req, res){
 
 });
 
-app.post('/logout', function(req, res){
+api.post('/login', function(req, res){
 
 });
 
-app.post('/createGroup', function(req, res){
+api.post('/logout', function(req, res){
+
+});
+
+api.post('/createGroup', function(req, res){
   /*
   {
     userId: userId,
@@ -47,7 +47,7 @@ app.post('/createGroup', function(req, res){
   res.send("ok");
 });
 
-app.post('/joinGroup', function(req, res){
+api.post('/joinGroup', function(req, res){
 
 });
 
