@@ -4,14 +4,14 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const User = require('./db/models/user');
-const Event = require('./db/models/event');
-const Route = require('./db/models/route');
 const Keyword = require('./db/models/Keyword');
+const Route = require('./db/models/route');
 const keyword_route = require('./db/models/keyword_route');
+const Event = require('./db/models/event');
 
 const userController = require('./db/controllers/userController');
-const eventController = require('./db/controllers/eventController');
 const routeController = require('./db/controllers/routeController');
+const eventController = require('./db/controllers/eventController');
 
 const googleApiDirections = require('./googleApiDirections');
 const app = express();
@@ -36,33 +36,31 @@ app.post('/signup', (req, res) => {
                 .then((user) => {
                     if (!user) {
                         //add new user
-                        userController.createUser({
-                            name: req.body.name,
-                            username: req.body.username,
-                            email: req.body.email,
-                            password: req.body.password
-                        }, (user_Id, username) => {
-                            const data = {
-                                userId: user.get('id'),
-                                username: user.get('name')
-                            };
-                            res.send(200, data)
+                        userController.createUser(req.body)
+                           .then((user) => {
+                            // const data = {
+                            //     'userId': user['id'],
+                            //     'username': user['username']
+                            // };
+                            res.status(200).send(user)
                         });
                     } else {
+                        //const userPassword = user.password
                         //existing user
-                        user.comparePassword(userPassword, (matches) => {
-                                if (matches) {
-                                    //log in
-                                    const data = {
-                                        userId: user.get('id'),
-                                        username: user.get('name')
-                                    };
-                                    res.send(200, data)
-                                } else {
-                                    //send resp with error, wrong password
-                                    res.send(401, 'wrong password!')
-                                }
-                        })
+                        // User.comparePassword(userPassword, (matches) => {
+                        //         if (matches) {
+                        //             //log in
+                                    // var data = {
+                                    //     'userId': user['id'],
+                                    //     'username': user['username']
+                                    // };
+
+                                    res.status(200).send(JSON.stringify(user))
+                                // } else {
+                                //     //send resp with error, wrong password
+                                //     res.send(401, 'wrong password!')
+                                // }
+                      //  })
                   }
             })
  });

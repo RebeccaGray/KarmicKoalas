@@ -31,10 +31,6 @@ class Splash extends Component {
   	});
   }
 
-	navToSignup(){
-
-	}
-
   render() {
 		return (
       <View style={styles.container}>
