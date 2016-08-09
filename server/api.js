@@ -2,21 +2,43 @@
 const nodemailer = require('nodemailer');
 const express = require('express');
 const bodyParser = require('body-parser');
-
-const User = require('./db/models/user');
-const Keyword = require('./db/models/Keyword');
-const Route = require('./db/models/route');
-const keyword_route = require('./db/models/keyword_route');
-const Event = require('./db/models/event');
-
-const userController = require('./db/controllers/userController');
-const routeController = require('./db/controllers/routeController');
-const eventController = require('./db/controllers/eventController');
-
 const googleApiDirections = require('./googleApiDirections');
 const app = express();
+var mysql = require('mysql');
 
 app.use(bodyParser.json());
+
+var db_config = {
+  connectionLimit: 15,
+  port     :  3030,
+  host     : 'mysqlcluster11.registeredsite.com',
+  user     : 'adminkoala',
+  password : '!Qaz2wsx3edc',
+  database : 'koala',
+  multipleStatements: true,
+//  acquireTimeout: 1000000000,
+  minConnections: 1
+};
+
+var createConnection = function createConnection() {
+    var connection = mysql.createConnection(db_config);
+  console.log("connected",connection)
+    connection.connect(function (err) {
+        if (err) {
+          console.error('error connecting: ' + err.stack);
+        }
+        else {
+          console.log("connected")
+        }
+    });
+
+    connection.on('error',function(err){
+        console.error(err);
+        createConnection();
+    });
+};
+
+createConnection();
 
 app.post('/getRouteFromGoogle', (req, res) => {
     // req.body.start = 40.8534229,-73.9793236
@@ -27,56 +49,86 @@ app.post('/getRouteFromGoogle', (req, res) => {
     });
 });
 
-app.post('/signup', (req, res) => {
-            //check if existing user..
-            //login or add..
-            //reurn userID from db
-            const userEmail = req.body.email
-            new User({ email: userEmail}).fetch()
-                .then((user) => {
-                    if (!user) {
-                        //add new user
-                        userController.createUser(req.body)
-                           .then((user) => {
-                            // const data = {
-                            //     'userId': user['id'],
-                            //     'username': user['username']
-                            // };
-                            res.status(200).send(user)
-                        });
-                    } else {
-                        //const userPassword = user.password
-                        //existing user
-                        // User.comparePassword(userPassword, (matches) => {
-                        //         if (matches) {
-                        //             //log in
-                                    // var data = {
-                                    //     'userId': user['id'],
-                                    //     'username': user['username']
-                                    // };
+ app.post('/signup', (req, res) => {
+   const email = req.body['email'];
+   const username = req.body['username'];
+   const password = req.body['password'];
+   //res.send(email)
+   var callback =  (resp)=>{res.send('ok')}
 
-                                    res.status(200).send(JSON.stringify(user))
-                                // } else {
-                                //     //send resp with error, wrong password
-                                //     res.send(401, 'wrong password!')
-                                // }
-                      //  })
-                  }
-            })
- });
+   (email, username, password, callback) => {
+   var sql = 'INSERT into Users (email, username, password) values(?, ?, ?);';
+   var values = [email, username, password];
 
-        // app.post('/updateUser', (req, res)=>{
-        //   userController.updateUser(req.body.userId, req.body.data, (user)=>{
-        //     res.send(user);
-        //   });
-        // });
+   connection.query(sql, values, function(err){
+     if(err) {
+       console.error('error in db addUser: ', err);
+     }
+   });
 
-        // app.post('/addRoute', (req, res)=>{
-        //   userController.addRoute(req.body.userId, req.body.routeId, (user)=>{
-        //     res.send(user);
-        //   });
-        // });
-
+   connection.query('SELECT id FROM Users WHERE email = ?;', email, function(err, data) {
+     if(err) {
+       console.error("error in db addUser: ", err);
+     }
+     callback(data);
+   });
+ }
+ })
+ //   // Get all the user information
+ //    const email = req.body['email'];
+ //    const username = req.body['username'];
+ //    const password = req.body['password'];
+ //    // If no missing data
+ // if (email !== null && username !== null && password !== null) {
+ //     // Search in db in User table for existing email
+ //       console.log(email)
+ //    //  db.query('SELECT * FROM Users WHERE email = ?;', [email], (err, rows) => {
+ //    db.query(`SELECT * FROM Users; `, (err, rows) => {
+ //       // If it doesn't exists
+ //        console.log('indb')
+ //       if (err){console.log(err)}
+ //       if(rows.length === 0) {
+ //         // Encrypt password
+ //         console.log(password)
+ //         //password = bcrypt.hashSync(password);
+ //         // Create user
+ //         db.query('INSERT INTO Users SET email = ?, username = ?, password = ?;',
+ //         [email, username, password],
+ //            (err, rows) => {
+ //           if(err){
+ //             console.log(err);
+ //             res.send('error');
+ //           }
+ //           //return user_id and username to client for storage on device
+ //           //util.createToken(request, response, rows.insertId);
+ //           const data = {userId:'foo'}
+ //           res.send(JSON.stringify(data));
+ //         });
+ //       } else {
+ //         //exitsing user
+ //         // Password check
+ //         bcrypt.compare(password, rows[0].password, function(err, result) {
+ //           if (err) {
+ //             console.error(err);
+ //             res.send('error');
+ //           } else if (result) {
+ //             //return user_id and username to client for storage on device
+ //             //util.createToken(request, response, rows.insertId);
+ //             const data = {userId:'foo'}
+ //             res.send(JSON.stringify(data));
+ //           } else {
+ //             // Password mismatch, unauthorized
+ //             console.log("Password mismatch!");
+ //             res.send('ok');
+ //           }
+ //         });
+ //
+ //       }
+ //     });
+ //   } else {
+ //     res.send('ok');
+ //   }
+ //});
 
 
 app.post('/searchRoutes', (req, res) => {

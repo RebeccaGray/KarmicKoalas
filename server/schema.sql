@@ -1,0 +1,50 @@
+CREATE TABLE IF NOT EXISTS `Users` (
+  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `password` MEDIUMTEXT NULL DEFAULT NULL,
+  `username` MEDIUMTEXT NULL DEFAULT NULL,
+  `email` MEDIUMTEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `Keywords` (
+  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `word` MEDIUMTEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `Routes` (
+  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `title` MEDIUMTEXT NULL DEFAULT NULL,
+  `start` MEDIUMTEXT NULL DEFAULT NULL,
+  `end` MEDIUMTEXT NULL DEFAULT NULL,
+  `points_of_interest` MEDIUMTEXT NULL DEFAULT NULL,
+  `route_object` MEDIUMTEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `Events` (
+  `id` INTEGER NOT NULL AUTO_INCREMENT,
+  `name` MEDIUMTEXT NULL DEFAULT NULL,
+  `host_id` INTEGER NULL DEFAULT NULL,
+  `route_id` INTEGER NULL DEFAULT NULL,
+  `invitees` MEDIUMTEXT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `events_participants` (
+  `event_id` INTEGER NULL DEFAULT NULL,
+  `participant_id` INTEGER NULL DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS `keywords_routes` (
+  `route_id` INTEGER NULL DEFAULT NULL,
+  `keyword_id` INTEGER NULL DEFAULT NULL
+);
+
+ALTER TABLE `Events` ADD FOREIGN KEY (host_id) REFERENCES `Users` (`id`);
+ALTER TABLE `Events` ADD FOREIGN KEY (route_id) REFERENCES `Routes` (`id`);
+ALTER TABLE `events_participants` ADD FOREIGN KEY (event_id) REFERENCES `Events` (`id`);
+ALTER TABLE `events_participants` ADD FOREIGN KEY (participant_id) REFERENCES `Users` (`id`);
+ALTER TABLE `keywords_routes` ADD FOREIGN KEY (route_id) REFERENCES `Routes` (`id`);
+ALTER TABLE `keywords_routes` ADD FOREIGN KEY (keyword_id) REFERENCES `Keywords` (`id`);
+CREATE INDEX `keyword_index` ON `keywords_routes` (`keyword_id`);

@@ -1,4 +1,3 @@
-
 'use strict';
 
 const express = require('express');
@@ -8,7 +7,7 @@ const PORT = process.env.PORT || 8000;
 const INDEX = path.join(__dirname, 'index.html');
 const app = require('./api');
 const server = require('http').Server(app)
-    // .use((req, res) => res.sendFile(test) )
+     app.use((req, res) => res.sendFile(INDEX) )
 server.listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 const io = require('socket.io')(server);
@@ -21,11 +20,11 @@ const myRoom = 'baz';
 io.on('connection', (socket) => {
             console.log('Client connected');
 
-            this.on('intitialize', (data) => {
-                myRoom = data.eventId;
-                userId = data.userId;
-                username = data.username;
-                console.log('intialaze client side', myRoom, userId, username)
+            socket.on('intitialize', (data) => {
+                // myRoom = data.eventId;
+                // userId = data.userId;
+                // username = data.username;
+                console.log('intialaze client side', data)
                 socket.join(myRoom);
             });
 
