@@ -39,7 +39,30 @@ var createConnection = function createConnection() {
 };
 
 createConnection();
+var callback =  (resp)=>{res.send('ok', data)}
 
+const email = 'rebecca.gray@gmail.com';
+const username = 'rebeccaIsAwesome';
+const password = 'mks42';
+
+(email, username, password, callback) => {
+var sql = 'INSERT into Users (email, username, password) values(?, ?, ?);';
+var values = [email, username, password];
+
+connection.query(sql, values, function(err){
+  if(err) {
+    console.error('error in db addUser: ', err);
+  }
+});
+
+connection.query('SELECT id FROM Users WHERE email = ?;', email, function(err, data) {
+  if(err) {
+    console.error("error in db addUser: ", err);
+  }
+  callback(data);
+});
+}
+//})
 app.post('/getRouteFromGoogle', (req, res) => {
     // req.body.start = 40.8534229,-73.9793236
     // req.body.end = 40.7466059,-73.9885128
@@ -54,7 +77,7 @@ app.post('/getRouteFromGoogle', (req, res) => {
    const username = req.body['username'];
    const password = req.body['password'];
    //res.send(email)
-   var callback =  (resp)=>{res.send('ok')}
+   var callback =  (resp)=>{res.send('ok', data)}
 
    (email, username, password, callback) => {
    var sql = 'INSERT into Users (email, username, password) values(?, ?, ?);';
@@ -187,6 +210,7 @@ app.post('/createRoute', (req, res) => {
 
 
 app.post('/createEvent', (req, res) => {
+  //{route_id:routeId, time:time, host_id:userId, inviteList:inviteList}
     eventController.createEvent(req.body, (event) => {
       //  var transporter = nodemailer.createTransport('smptps://karmickoalas42%40gmail.com:makersquare42@smptp.gmail.com');
         JSON.parse(event.get('invitees')).forEach((invitee) => {
