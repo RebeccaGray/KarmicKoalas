@@ -110,12 +110,10 @@ app.post('/searchKeywords', (req, res) => {
 });
 app.post('/getRouteById', (req, res) => {
   var event_id = req.body.event_id;
-  console.log('getRouteByID', event_id)
   //get id for route from events db based on event_id from client
   return db.knex.raw('SELECT `route_id` FROM `Events` WHERE `id` = ' + event_id)
     .then((route_id) => {
       route_id = route_id[0][0].route_id;
-      console.log('getRouteByID', route_id)
       //use route_id from Events table to get Route data from Routes table
       return db.knex.raw('SELECT * FROM `Routes` WHERE `id` = ' + route_id)
         .then((routeObject) => {
@@ -128,7 +126,6 @@ app.post('/getRouteById', (req, res) => {
             points_of_interest: routeObject.points_of_interest,
             route_object: routeObject.route_object
           }
-          console.log('getRouteByID', data)
           res.status(200).send(data)
         })
     })
@@ -140,11 +137,9 @@ app.post('/getMyEvents', (req, res) => {
     // returns [ { event_id : {title, time, startAddres, endAddress}},{ event_id : {title, time, startAddres, endAddress}}….]
   var user_id = req.body.user_id;
   //get user_id from client
-  console.log('getMyEventsuserid', user_id)
   //get event_id list from join table using user_id
   return db.knex.raw('SELECT `event_id` FROM `events_participants` WHERE `user_id` = ' + user_id)
     .then((events) => {
-      console.log('getMyEvents', events)
       if(events[0].length === 0){
         //no events for this user_id
         res.status(200).send({'message':"You don't have any events"})
@@ -155,7 +150,6 @@ app.post('/getMyEvents', (req, res) => {
         'FROM `Events` INNER JOIN `Routes` ON `Routes`.`id`=`Events`.`route_id` WHERE `Events`.`id` = ' + id + '')
            .then((event) => {
              event = event[0][0];
-             console.log('getMyEventsevent', event)
             //compile object with data on event]
             if(event.start_address !== null){
               var start_address = event.start_address.slice(1,event.start_address.lastIndexOf(',')-6)
