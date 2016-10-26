@@ -12,7 +12,6 @@ const Event = require('./db/models/event');
 
 const userController = require('./db/controllers/userController');
 const routeController = require('./db/controllers/routeController');
-const eventController = require('./db/controllers/eventController');
 const mysql = require('mysql');
 const googleApiDirections = require('./googleApiDirections');
 const googleApiAddresses = require('./googleApiAddresses');
