@@ -36,31 +36,25 @@ app.post('/searchKeywords', (req, res) => {
   var count = 0;
   //returns matching routes,[ {id, title, start, end, points_of_interest},...]
   var keywords = req.body.keywords;
-  //console.log('keywords',keywords)
   //get id for each keyword from keywords db
   var keywordList = '(';
   keywords.forEach((word) => {
     word = word.toLowerCase();
-    //console.log('word',word)
     keywordList += '"'+  word + '", ';
   })
   keywordList = keywordList.slice(0,-2)
   keywordList = keywordList += ')';
-  //console.log('keywordList',keywordList)
   return db.knex.raw('SELECT `id` FROM `keywords` WHERE `word` IN '+ keywordList)
       .then((results) => {
-        //console.log('results',results[0])
         var keyIds = []
         results[0].forEach((id)=>{
           keyIds.push(id.id)
         })
-        //console.log('keyIds',keyIds)
         if (keyIds.length === 0){
           res.status(200).send({message:"We don't have any routes for those keywords"})
         } else {
          var idList = '(';
           keyIds.forEach((id) => {
-            //console.log('id',id)
             idList += '"'+  id + '", ';
           })
           idList = idList.slice(0,-2)
@@ -69,7 +63,6 @@ app.post('/searchKeywords', (req, res) => {
         return db.knex.raw('SELECT `route` FROM `keywords_routes` WHERE `key_id` IN ' + idList)
           .then((results) => {
             var routes = []
-            //console.log('get routeids from keyword', results)
             if (results[0].length === 0){
               ++count
             }
@@ -77,21 +70,15 @@ app.post('/searchKeywords', (req, res) => {
               res.status(200).send({message:"We don't have any routes for those keywords"})
             }
             results[0].forEach((row)=>{
-            //  console.log('row',row)
-            //  console.log('route',row.route)
               routes.push(row.route)
             })
             //this will be a list of records with route ids from join table with keyword id
             routes.forEach((route_id) => {
-            //  console.log('route_id', route_id)
-              //console.log(routeIdList.includes(route_id))
-              if(routeIdList.indexOf(route_id) === -1){
+               if(routeIdList.indexOf(route_id) === -1){
                    routeIdList.push(route_id)
                    count ++;
-                   //console.log('routeIdList', routeIdList, count)
-                   return db.knex.raw('SELECT `title`,`start`,`end`,`id`,`points_of_interest`,`start_address`, `end_address`  FROM `Routes` WHERE `id` = ' + route_id)
+                    return db.knex.raw('SELECT `title`,`start`,`end`,`id`,`points_of_interest`,`start_address`, `end_address`  FROM `Routes` WHERE `id` = ' + route_id)
                     .then((routeInfo) => {
-                      //console.log('get route_info', routeInfo[0][0])
                       var routeInfo = routeInfo[0][0]
                       var title = routeInfo.title.slice(1,routeInfo.title.length-1)
                       if(routeInfo.start_address !== null){
@@ -110,11 +97,8 @@ app.post('/searchKeywords', (req, res) => {
                         points_of_interest: routeInfo.points_of_interest,
                         id:routeInfo.id
                       }
-                      //console.log('data',data)
                       routesList.push(data);
-                      //console.log('routesList',routesList)
                         if (routesList.length === count) {
-                        //  console.log('routeslist',count, routesList)
                            res.status(200).send(routesList)
                         }
                       })
@@ -122,7 +106,6 @@ app.post('/searchKeywords', (req, res) => {
             })
           })
         }
-  //})
  })
 });
 app.post('/getRouteById', (req, res) => {
@@ -192,7 +175,6 @@ app.post('/getMyEvents', (req, res) => {
                 event_id: event.id
               }
               myEvents.push(obj);
-              console.log('getMyEvents', myEvents)
               if (myEvents.length === events[0].length) {
                 res.status(200).send(myEvents)
               }
@@ -250,10 +232,9 @@ app.post('/createRoute', (req, res) => {
   var route_id;
   var count = 0;
   var keywords = req.body.keywords
-        console.log('insert keyword into routes',keywords )
-    //var addWords = helpers.generateKeywords(req.body)
+    //'insert keyword into routes',keywords 
+    //var addWords = helpers.generateKeywords(req.body) **future feature
     googleApiAddresses(req.body.start, req.body.end, (address) => {
-    console.log(address);
     var data = req.body;
     data.startAddress = address.start
     data.endAddress = address.end
@@ -267,15 +248,13 @@ app.post('/createRoute', (req, res) => {
         return db.knex.raw('INSERT IGNORE INTO `keywords` (`word`) values ( "' + input + '")')
           .then((result) => {
             keyword_id = result[0].insertId
-                  console.log('insert keyword into routes',input )
-          })
+           })
           .then(() => {
             if (keyword_id === 0) {
               //existing keyword, get id with select
               return db.knex.raw('SELECT * FROM `keywords` WHERE `word` = "' + input + '"')
                 .then((result) => {
                   keyword_id = result[0][0].id
-                        console.log('insert keyword into routes',keyword_id )
                 })
             }
           })
@@ -283,7 +262,6 @@ app.post('/createRoute', (req, res) => {
             return db.knex.raw('INSERT INTO `keywords_routes` (`key_id`, `route`) values (' + keyword_id + ', ' + route_id + ' ) ')
               .then((result) => {
                 ++count;
-                  console.log('insert keyword into keyword_routes',keyword_id )
                 if (count === keywords.length) {
                   res.status(200).send(JSON.stringify({
                     'route_id': route_id
@@ -303,7 +281,6 @@ app.post('/createEvent', (req, res) => {
   var participants = req.body.guests;
   participants.push(req.body.host)
   var data = req.body;
-  console.log('createEvent',data )
   return db.knex.raw('INSERT INTO `Events` (`title`, `host_id`, `route_id`, `time`) VALUES ("' + data.title + '",' + data.host + ',' + data.route_id + ',"' + data.time + '")')
     .then((event) => {
       event_id = event[0].insertId;
@@ -326,7 +303,6 @@ app.post('/createEvent', (req, res) => {
            //compile list of emails in format for nodemailer
            var user_emails = '';
            emails[0].forEach((email) =>{
-             console.log(email.email)
              user_emails += email.email + ', '
            })
            user_emails.slice(0,-2)
